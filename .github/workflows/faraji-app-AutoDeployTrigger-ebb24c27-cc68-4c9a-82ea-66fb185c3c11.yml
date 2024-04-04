@@ -1,0 +1,43 @@
+name: Trigger auto deployment for faraji-app
+
+# When this action will be executed
+on:
+  # Automatically trigger it when detected changes in repo
+  push:
+    branches: 
+      [ main ]
+    paths:
+    - '**'
+    - '.github/workflows/faraji-app-AutoDeployTrigger-ebb24c27-cc68-4c9a-82ea-66fb185c3c11.yml'
+
+  # Allow manual trigger 
+  workflow_dispatch:
+      
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout to the branch
+        uses: actions/checkout@v2
+
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.FARAJIAPP_AZURE_CREDENTIALS }}
+
+      - name: Build and push container image to registry
+        uses: azure/container-apps-deploy-action@v2
+        with:
+          appSourcePath: ${{ github.workspace }} 
+          registryUrl: farajireg.azurecr.io
+          registryUsername: ${{ secrets.FARAJIAPP_REGISTRY_USERNAME }}
+          registryPassword: ${{ secrets.FARAJIAPP_REGISTRY_PASSWORD }}
+          containerAppName: faraji-app
+          resourceGroup: webs
+          imageToBuild: farajireg.azurecr.io/farajiabdo:${{ github.sha }}
+          
+            
+
+     
+
